@@ -17,8 +17,8 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Instalar dependencias
         run: npm ci
@@ -34,26 +34,17 @@ jobs:
           name: coverage-report
           path: coverage/
 
-  quality:
-    name: Análisis de calidad (SonarQube)
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Descargar el código
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v4
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  # Nota: el análisis de calidad de código se hace con SonarQube Cloud
+  # (SonarCloud), conectado directamente al repositorio con "Automatic
+  # Analysis". Por eso no está aquí como job del pipeline: SonarCloud no
+  # permite tener el análisis automático y el análisis por CI/CD activos
+  # al mismo tiempo. Las métricas (seguridad, confiabilidad, mantenibilidad,
+  # duplicación) se documentan en el informe de cierre.
 
   deploy:
     name: Despliegue automático a entorno de prueba
     runs-on: ubuntu-latest
-    needs: [test, quality]
+    needs: test
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Descargar el código
@@ -62,7 +53,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Instalar dependencias de producción
         run: npm ci --omit=dev
